@@ -15,6 +15,8 @@ __all__ = [
 
 class PATH:
     ROOT = Path(__file__).parents[2]
+    SRC = ROOT / "src"
+    CRED = SRC / "data" / "credentials"
     DATA = ROOT / "data"
     R_DATA = DATA / "raw"
     P_DATA = DATA / "processed"
