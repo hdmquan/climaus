@@ -1,6 +1,5 @@
 import os
 import re
-from datetime import datetime, timedelta
 from pathlib import Path
 from typing import List
 
@@ -15,7 +14,7 @@ from src.data.metadata.constants import AUSTRALIA_BBOX
 logger = setup_logger()
 
 load_dotenv()
-ee.Initialize()
+ee.Initialize(project=os.getenv("GOOGLE_PROJECT_ID"))
 
 DYNAMIC_WORLD_COLLECTION = "GOOGLE/DYNAMICWORLD/V1"
 EXPORT_SCALE = 10
@@ -63,8 +62,9 @@ def export_annual_dynamic_world(years: List[int], folder: str):
 
 
 def authenticate_drive() -> GoogleDrive:
-    # This auths locally — run in interactive machine
+
     gauth = GoogleAuth()
+    gauth.LoadClientConfigFile(str(PATH.CRED / "google_oauth_client_secret.json"))
     gauth.LocalWebserverAuth()
     return GoogleDrive(gauth)
 
@@ -81,7 +81,7 @@ def download_exports_from_drive(folder_name: str, local_path: Path):
         {"q": f"'{folder_name}' in parents and trashed=false"}
     ).GetList()
 
-    dw_files = [f for f in file_list if re.match(r"dw_label_\d{4}\.tif", f["title"])]
+    dw_files = [f for f in file_list if re.match(r"dw_label_\d{4}\.tif", f["titltqe"])]
 
     if not dw_files:
         logger.warning("No matching Dynamic World .tif files found.")
@@ -95,7 +95,7 @@ def download_exports_from_drive(folder_name: str, local_path: Path):
             logger.info(f"Skipped (already exists): {file_title}")
             continue
 
-        logger.info(f"⬇️ Downloading {file_title} → {dest_path}")
+        logger.info(f"Downloading {file_title} → {dest_path}")
         file.GetContentFile(str(dest_path))
 
     logger.success(f"All Dynamic World GeoTIFFs downloaded to {local_path}")
